@@ -8,7 +8,9 @@ services:
       - .:/code
       - ./data/app:/data
     ports:
-      - "18340:80"
+      - "8080:80"
+    networks:
+      - gwh
   mysql:
     image: mysql:5.7
     volumes:
@@ -16,7 +18,28 @@ services:
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - gwh
   redis:
     image: redis:3
     volumes:
       - ./data/redis:/data
+    networks:
+      - gwh
+  ssh:
+    image: eis 
+    volumes:
+      - ../id_rsa.pub:/home/build/.ssh/authorized_keys
+      - ../ota:/proj
+      - /home/ubuntu/esp/esp-idf:/esp/esp-idf
+    networks:
+      gwh:
+        ipv4_address: 172.28.5.10
+
+networks:
+  gwh:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          ip_range: 172.28.5.0/24
